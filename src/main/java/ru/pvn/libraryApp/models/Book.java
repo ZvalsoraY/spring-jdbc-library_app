@@ -16,16 +16,17 @@ public class Book {
     private String name;
 
     //private String isbn;
-
+    private Author author;
     private Genre genre;
 
-    public Book(long id, String name, String isbn, Genre genre/*, List<LiteraryProduction> literaryProductions*/) {
+/*    public Book(long id, String name*//*, String isbn*//*, Author author, Genre genre*//*, List<LiteraryProduction> literaryProductions*//*) {
         this.id = id;
         this.name = name;
         //this.isbn = isbn;
        // this.literaryProductions = literaryProductions;
+        this.author = author;
         this.genre = genre;
-    }
+    }*/
 
 
     @Override
@@ -35,6 +36,7 @@ public class Book {
                 ", name='" + name + '\'' +
                 //", isbn='" + isbn + '\'' +
                 //", literaryProductions=" + literaryProductions +
+                ", author=" + author + '\'' +
                 ", genre=" + genre +
                 '}';
     }

@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Repository;
 
+import ru.pvn.libraryApp.models.Author;
 import ru.pvn.libraryApp.models.Book;
 import ru.pvn.libraryApp.models.Genre;
 
@@ -25,20 +26,12 @@ public class BookDaoJdbc implements BookDao {
 
     private final String  selectBooks = "SELECT bks.id book_id,\n" +
             "                       bks.name book_name, \n" +
-//            "                       bks.isbn book_isbn,\n" +
             "                       gnrs.id genre_id, \n" +
             "                       gnrs.name genre_name,\n" +
-//            "                       lit.id literary_id, \n" +
-//            "                       lit.name literary_name,\n" +
             "                       aut.id author_id,\n" +
             "                       aut.fio author_fio,\n" +
-//            "                       aut.birthday author_birthday,\n" +
-//            "                       aut.date_of_death author_date_of_death \n" +
             "        FROM BOOKS bks\n" +
-//            "        JOIN LITERARY_IN_BOOKS lib ON bks.id = lib.book_id\n" +
-//            "        JOIN LITERARY lit ON lit.id = lib.literary_id\n" +
-//            "        JOIN AUTHORS_IN_LITERARY ail ON ail.literary_id = lit.id\n" +
-            "        JOIN AUTHORS aut ON aut.id = ail.author_id\n" +
+            "        JOIN AUTHORS aut ON aut.id = bks.author_id\n" +
             "        JOIN GENRES gnrs ON gnrs.id = bks.genre_id\n";
 
     public BookDaoJdbc(NamedParameterJdbcOperations jdbc, GenreDaoJdbc genreJdbc/*, LiteraryProductionDaoJdbc literaryJdbc*/) {
@@ -57,23 +50,26 @@ public class BookDaoJdbc implements BookDao {
 
     @Override
     public void create(Book book) {
-        List<Long> id = jdbc.query("SELECT LITERARY_SEQ.nextval nval",
-                (resultSet, i) -> resultSet.getLong("nval"));
+//        List<Long> id = jdbc.query("SELECT LITERARY_SEQ.nextval nval",
+//                (resultSet, i) -> resultSet.getLong("nval"));
         jdbc.update("insert into books (" +
-                        " ID,\n" +
+//                        " ID,\n" +
                         " NAME,\n" +
 //                        " ISBN,\n" +
+                        " AUTHOR_ID\n" +
                         " GENRE_ID\n" +
                         ")" +
                         "   values ( " +
-                        " :id,\n" +
+                        //" :id,\n" +
                         " :name,\n" +
 //                        " :isbn,\n" +
+                        " :authorId\n" +
                         " :genreId\n" +
                         ")",
-                Map.of( "id", id,
+                Map.of( //"id", id,
                         "name", book.getName(),
 //                        "isbn", book.getIsbn(),
+                        "authorId", book.getAuthor().getId(),
                         "genreId", book.getGenre().getId()));
 //        for (LiteraryProduction lp : book.getLiteraryProductions()) {
 //            jdbc.update("insert into literary_in_books (" +
@@ -91,11 +87,13 @@ public class BookDaoJdbc implements BookDao {
             jdbc.update("update books  SET" +
                             " NAME = :name,\n" +
 //                            " ISBN = :isbn,\n" +
+                            " AUTHOR_ID = :authorId\n" +
                             " GENRE_ID = :genreId\n" +
                             "WHERE ID = :id",
                     Map.of("id", book.getId(),
                             "name", book.getName(),
 //                            "isbn", book.getIsbn(),
+                            "authorId", book.getAuthor().getId(),
                             "genreId", book.getGenre().getId() ));
         }
 
@@ -136,6 +134,7 @@ public class BookDaoJdbc implements BookDao {
                             resultSet.getLong("id"),
                             resultSet.getString("name"),
 //                            resultSet.getString("isbn"),
+                            new Author(resultSet.getLong("author_id"), resultSet.getString("author_fio")),
                             new Genre(resultSet.getLong("genre_id"), resultSet.getString("genre_name"))
 //                            , new ArrayList<LiteraryProduction>()
                             );

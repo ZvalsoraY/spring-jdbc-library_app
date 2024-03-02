@@ -91,6 +91,7 @@ public class ShellCommands {
     public String addBook(@ShellOption String name,
 //                          @ShellOption String isbn,
 //                          @ShellOption String literarysId, // вводить через запятую, например 1,2
+                          @ShellOption String authorId, // вводить через запятую, например 1,2
                           @ShellOption String genreId) throws SQLException {
         Book book = new Book();
         book.setName(name);
