@@ -33,7 +33,7 @@ public class BookDaoJdbcTests {
     @Test
     void shouldGetBookFromDBById() {
         Book book = bookJdbc.getById(1);
-        assertThat(book).hasFieldOrPropertyWithValue("name", "Сборник русских авторов");
+        assertThat(book).hasFieldOrPropertyWithValue("name", "Сказка о попе и его работнике Балде");
     }
 
     @DisplayName("добавить книгу")

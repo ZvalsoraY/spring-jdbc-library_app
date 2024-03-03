@@ -24,13 +24,11 @@ import java.util.Locale;
 public class ShellCommands {
 
     private final AuthorDaoJdbc jdbcAuthor;
-//    private final LiteraryProductionDaoJdbc jdbcAuthorLiterary;
     private final GenreDaoJdbc jdbcGenreDao;
     private final BookDaoJdbc jdbcBookDao;
 
-    public ShellCommands(AuthorDaoJdbc jdbcAuthor, /*LiteraryProductionDaoJdbc jdbcAuthorLiterary,*/ GenreDaoJdbc jdbcGenreDao, BookDaoJdbc jdbcBookDao) {
+    public ShellCommands(AuthorDaoJdbc jdbcAuthor, GenreDaoJdbc jdbcGenreDao, BookDaoJdbc jdbcBookDao) {
         this.jdbcAuthor = jdbcAuthor;
-//        this.jdbcAuthorLiterary = jdbcAuthorLiterary;
         this.jdbcGenreDao = jdbcGenreDao;
         this.jdbcBookDao = jdbcBookDao;
     }
@@ -40,32 +38,6 @@ public class ShellCommands {
         Console.main();
         return "Консоль H2 запущена";
     }
-
-/*    @ShellMethod(value = "add Author to DB", key = {"add-author"})
-    public String addAuthor(@ShellOption String fio
-                            ,@ShellOption String birthday
-                            ,@ShellOption String dayOfDeath
-                            ) throws SQLException, ParseException {
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        Author author = null;
-        author = new Author(fio*//*, format.parse(birthday), format.parse(dayOfDeath)*//*);
-        jdbcAuthor.create(author);
-        return String.format("Автор %s добавлен", author);
-    }*/
-
-    //Пользователь вводит имя произведения и список id авторов,
-    //в дальнейшем не сложно переделать что будет вводить ФИО
-    //Без фанатизма (с)
-/*    @ShellMethod(value = "add LiteraryProduction to DB", key = {"add-lp"})
-    public String addAuthor(@ShellOption String name,
-                            @ShellOption String author_id) throws SQLException, ParseException {
-        LiteraryProduction literaryProduction = new LiteraryProduction( name, new ArrayList<Author>());
-        for (String id : author_id.split(",")) {
-            literaryProduction.getAuthors().add(jdbcAuthor.getById(Long.parseLong(id)));
-        }
-        jdbcAuthorLiterary.create(literaryProduction);
-        return String.format("Произведение %s добавлено", name);
-    }*/
 
     @ShellMethod(value = "add Genre to DB", key = {"add-genre"})
     public String addAuthor(@ShellOption String name) throws SQLException {
@@ -89,19 +61,12 @@ public class ShellCommands {
 
     @ShellMethod(value = "add book to DB", key = {"add-book"})
     public String addBook(@ShellOption String name,
-//                          @ShellOption String isbn,
-//                          @ShellOption String literarysId, // вводить через запятую, например 1,2
-                          @ShellOption String authorId, // вводить через запятую, например 1,2
+                          @ShellOption String authorId, // вводить через пробел
                           @ShellOption String genreId) throws SQLException {
         Book book = new Book();
         book.setName(name);
-//        book.setIsbn(isbn);
-//        book.setGenre(jdbcGenreDao.getById(Long.parseLong(genreId)));
-//        List<LiteraryProduction> literaryProductions = new ArrayList<>();
-//        for (String id : literarysId.split(",")) {
-//            literaryProductions.add(jdbcAuthorLiterary.getById(Long.parseLong(id)));
-//        }
-//        book.setLiteraryProductions(literaryProductions);
+        book.setAuthor(jdbcAuthor.getById(Long.parseLong(authorId)));
+        book.setGenre(jdbcGenreDao.getById(Long.parseLong(genreId)));
         jdbcBookDao.create(book);
         return "Книга " + book.toString() + "добавлена!";
     }
@@ -109,13 +74,13 @@ public class ShellCommands {
     @ShellMethod(value = "update book in DB", key = {"update-book"})
     public String updateBookById(@ShellOption String id,
                                  @ShellOption String name,
-//                                 @ShellOption String isbn,
+                                 @ShellOption String authorId,
                                  @ShellOption String genreId) throws SQLException {
 
             Book bookForUpdate = new Book();
             bookForUpdate.setId(Long.parseLong(id));
             bookForUpdate.setName(name);
-//            bookForUpdate.setIsbn(isbn);
+            bookForUpdate.setAuthor(jdbcAuthor.getById(Long.parseLong(authorId)));
             bookForUpdate.setGenre(jdbcGenreDao.getById(Long.parseLong(genreId)));
             jdbcBookDao.update(bookForUpdate);
             return "Книга " + bookForUpdate.toString() + "обновлена!";

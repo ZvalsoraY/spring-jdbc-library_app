@@ -34,7 +34,7 @@ public class BookDaoJdbc implements BookDao {
             "        JOIN AUTHORS aut ON aut.id = bks.author_id\n" +
             "        JOIN GENRES gnrs ON gnrs.id = bks.genre_id\n";
 
-    public BookDaoJdbc(NamedParameterJdbcOperations jdbc, GenreDaoJdbc genreJdbc/*, LiteraryProductionDaoJdbc literaryJdbc*/) {
+    public BookDaoJdbc(NamedParameterJdbcOperations jdbc, GenreDaoJdbc genreJdbc) {
         this.jdbc = jdbc;
     }
 
@@ -50,49 +50,30 @@ public class BookDaoJdbc implements BookDao {
 
     @Override
     public void create(Book book) {
-//        List<Long> id = jdbc.query("SELECT LITERARY_SEQ.nextval nval",
-//                (resultSet, i) -> resultSet.getLong("nval"));
         jdbc.update("insert into books (" +
-//                        " ID,\n" +
                         " NAME,\n" +
-//                        " ISBN,\n" +
-                        " AUTHOR_ID\n" +
+                        " AUTHOR_ID,\n" +
                         " GENRE_ID\n" +
                         ")" +
                         "   values ( " +
-                        //" :id,\n" +
                         " :name,\n" +
-//                        " :isbn,\n" +
-                        " :authorId\n" +
+                        " :authorId,\n" +
                         " :genreId\n" +
                         ")",
-                Map.of( //"id", id,
-                        "name", book.getName(),
-//                        "isbn", book.getIsbn(),
+                Map.of( "name", book.getName(),
                         "authorId", book.getAuthor().getId(),
                         "genreId", book.getGenre().getId()));
-//        for (LiteraryProduction lp : book.getLiteraryProductions()) {
-//            jdbc.update("insert into literary_in_books (" +
-//                    "BOOK_ID,\n" +
-//                    "LITERARY_ID)\n" +
-//                    " values ( " +
-//                    ":id,\n" +
-//                    ":lpId)\n",
-//                Map.of("id", id, "lpId", lp.getId()));
-//        }
     }
 
     @Override
     public void update(Book book) {
             jdbc.update("update books  SET" +
                             " NAME = :name,\n" +
-//                            " ISBN = :isbn,\n" +
-                            " AUTHOR_ID = :authorId\n" +
+                            " AUTHOR_ID = :authorId,\n" +
                             " GENRE_ID = :genreId\n" +
-                            "WHERE ID = :id",
+                            " WHERE ID = :id",
                     Map.of("id", book.getId(),
                             "name", book.getName(),
-//                            "isbn", book.getIsbn(),
                             "authorId", book.getAuthor().getId(),
                             "genreId", book.getGenre().getId() ));
         }
@@ -101,15 +82,13 @@ public class BookDaoJdbc implements BookDao {
 
     @Override
     public void deleteById(long id) {
-//        jdbc.update("DELETE FROM LITERARY_IN_BOOKS WHERE BOOK_ID = :id", Map.of("id", id));
-//        jdbc.update("DELETE FROM LITERARY_IN_BOOKS WHERE BOOK_ID = :id", Map.of("id", id));
         jdbc.update("DELETE FROM books WHERE id = :id", Map.of("id", id));
     }
 
     @Override
     public List<Book> getAll() {
         return jdbc.query(selectBooks+
-                " ORDER BY book_id, literary_id", new BooksExtractor());
+                " ORDER BY book_id", new BooksExtractor());
     }
 
 
@@ -126,36 +105,18 @@ public class BookDaoJdbc implements BookDao {
         @Override
         public List<Book> extractData(ResultSet resultSet) throws SQLException, DataAccessException {
             Map<Long, Book> books = new HashMap<>();
-//            Map<Long, LiteraryProduction> literaryProductions = new HashMap<>();
             while (resultSet.next()) {
                 Book book = books.get(resultSet.getLong("id"));
                 if (book == null) {
                     book = new Book(
                             resultSet.getLong("id"),
                             resultSet.getString("name"),
-//                            resultSet.getString("isbn"),
                             new Author(resultSet.getLong("author_id"), resultSet.getString("author_fio")),
                             new Genre(resultSet.getLong("genre_id"), resultSet.getString("genre_name"))
-//                            , new ArrayList<LiteraryProduction>()
                             );
                     books.put(resultSet.getLong("id"), book);
-//                    literaryProductions =  new HashMap<>();
                 }
-/*                LiteraryProduction literaryProduction = literaryProductions.get(resultSet.getLong("literary_id"));
-                if (literaryProduction == null) {
-                    literaryProduction = new LiteraryProduction(
-                            resultSet.getLong("literary_id"),
-                            resultSet.getString("literary_name"),
-                            new ArrayList<Author>());
-                    literaryProductions.put(resultSet.getLong("literary_id"), literaryProduction);
-                }
-                literaryProduction.getAuthors().add(new Author(
-                        resultSet.getLong("author_id"),
-                        resultSet.getString("author_fio"),
-                        resultSet.getDate("author_birthday"),
-                        resultSet.getDate("author_date_of_death")));
-                book.getLiteraryProductions().add(literaryProduction);
-                books.replace(resultSet.getLong("id"), book);*/
+
             }
             return new ArrayList<>(books.values());
         }
